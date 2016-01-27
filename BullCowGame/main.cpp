@@ -1,36 +1,48 @@
 #include <iostream>
 #include <string>
+#include <map>
 #include "main.h"
 
 using namespace std;
 
-void introduce();
-void getGuessAndPrint();
-bool validate(string InputString);
-
 // Entrypoint
 int main() {
-
-
-
 	// intro splash
 	introduce();
 
 	// Begin main game
-
-	PlayGame();
+	do {
+		PlayGame();
+	} while (AskToPlayAgain());
 	
-
 	return 0;
 }
 
-void PlayGame()
-{
+class BullsAndCowsGame {
+public:
+	string WORD;
+	int GUESS_COUNT;
+	int WORD_LENGTH;
+};
+
+void PlayGame() {
 	string WORD = "foo";
 	int GUESS_COUNT = WORD.length();
 	for (int i = 0; i < GUESS_COUNT; i++) {
-		getGuessAndPrint();
+		string Guess = getGuess();
+		printGuessFeedback(Guess);
 	}
+}
+
+bool AskToPlayAgain() {
+	// Get a guess from the user
+	cout << "Play again? (y): ";
+	string Response = "";
+	getline(cin, Response, '\n');
+	if (Response[0] == 'y' || Response[0] == 'Y') {
+		return true;
+	}
+	return false;
 }
 
 void introduce() {
@@ -43,7 +55,7 @@ void introduce() {
 	return;
 }
 
-void getGuessAndPrint() {
+string getGuess() {
 	// Get a guess from the user
 	cout << "Enter your guess: ";
 	string Guess = "";
@@ -52,13 +64,14 @@ void getGuessAndPrint() {
 	int valid = validate(Guess);
 	// Repeat the guess back to them
 
-	if (valid) {
-		cout << "Your guess was: " << Guess << endl;
+	if (!valid) {
+		return getGuess();
 	}
-	else {
-		getGuessAndPrint();
-	}
-	return;
+	return Guess;
+}
+
+void printGuessFeedback(string LastGuess){
+	cout << "Your guess was: " << LastGuess << endl;
 }
 
 bool validate(string InputString) {
@@ -66,10 +79,22 @@ bool validate(string InputString) {
 	if (InputString.length() == 0) {
 		return false;
 	}
-
 	if (InputString.find(' ') != string::npos) {
 		cout << "Please only enter a single word\n";
 		return false;
+	}
+
+	map<char, bool> letterMap;
+	for (int i = 0; i < InputString.length(); i++) {
+		char letter = InputString.at(i);
+		bool exists = letterMap.count(letter) > 0;
+		if (exists) {
+			cout << "Please only word with no repeated letters\n";
+			return false;
+		}
+		else {
+			letterMap[letter] = true;
+		}
 	}
 
 	return true;
